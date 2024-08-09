@@ -66,6 +66,8 @@ jobs:
 
   # Build job that only runs if lint and test jobs succeed
 
+
+
   build:
     needs: [lint, test] # lintとtestが成功した場合のみ実行
     runs-on: ubuntu-latest

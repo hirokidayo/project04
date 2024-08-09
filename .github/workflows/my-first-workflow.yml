@@ -66,11 +66,26 @@ jobs:
 
   # Build job that only runs if lint and test jobs succeed
   build:
-    needs: [lint, test]
     runs-on: ubuntu-latest
+    needs: [lint, test]
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Build from Docker
-        run: docker build -t mp-frontend:latest .
-        working-directory: ./starter/frontend
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        working-directory: starter/frontend
+
+      - name: Build application with Docker
+        run: docker build --build-arg=REACT_APP_MOVIE_API_URL=${{ vars.REACT_APP_MOVIE_API_URL }} --tag=mp-frontend:latest .
+        working-directory: starter/frontend
+
+      - name: Run docker image
+        run: docker run --name mp-frontend -p 3000:3000 -d mp-frontend
+        working-directory: starter/frontend
+
+      - name: Review logs
+        run: docker logs mp-frontend

@@ -1,70 +1,48 @@
-# Workflow name
-name: My First Workflow
-
-# Triggers for the workflow
+name: Continuous Integration - Front End
 on:
-  # Manual trigger using the workflow_dispatch event
-  workflow_dispatch:
-
-  # Automatic trigger on push events to the main branch
-  push:
-    branches:
-      - master
-
-  # Automatic trigger on pull request events targeting the main branch
   pull_request:
     branches:
       - main
-
-  # Scheduled trigger at 5:00 AM UTC, Monday through Friday
-  schedule:
-    - cron: '0 5 * * 1-5'
-
-# Jobs defined in the workflow
+    paths:
+      - 'starter/frontend/**'
+  workflow_dispatch:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.14]
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 
-        uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: latest
-
+          node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: npm install
-        working-directory: starter/frontend
-
-      - name: Modify ESLint rules to suppress errors
-        run: echo "module.exports.rules['prettier/prettier'][0] = 'warn';" >> starter/frontend/.eslintrc.js
-
-      - name: Run ESLint
+        working-directory: ./starter/frontend
+      - name: Lint
         run: npm run lint
-        working-directory: starter/frontend
-
-  # Testing job to run the test suite
+        working-directory: ./starter/frontend
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.14]
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 
-        uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: latest
-
+          node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: npm install
-        working-directory: starter/frontend
-
-      - name: Run tests
-        run: npm test -- --passWithNoTests
-        working-directory: starter/frontend
-
-  # Build job that only runs if lint and test jobs succeed
+        working-directory: ./starter/frontend
+      - name: Test
+        run: npm test
+        working-directory: ./starter/frontend
   build:
     needs: [lint, test]
     runs-on: ubuntu-latest
@@ -74,15 +52,3 @@ jobs:
       - name: Build from Docker
         run: docker build -t mp-frontend:latest .
         working-directory: ./starter/frontend
-
-  #     # Build job that only runs if lint and test jobs succeed
-  # build:
-  #   needs: [lint, test] # lintとtestが成功した場合のみ実行
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-
-  #     - name: Build Docker image
-  #       run: docker build -t frontend-app:latest .
-  #       working-directory: starter/frontend

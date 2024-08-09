@@ -1,85 +1,59 @@
-# Workflow name
-name: parallel-job-example
+name: CI Workflow
 
-# Triggers for the workflow
 on:
-  # Manual trigger using the workflow_dispatch event
-  workflow_dispatch:
-
-  # Automatic trigger on push events to the main branch
-  push:
-    branches:
-      - master
-
-  # Automatic trigger on pull request events targeting the main branch
   pull_request:
     branches:
       - master
+    paths:
+      - 'starter/frontend/**'
+  workflow_dispatch: # 手動での実行を許可
 
-  # Scheduled trigger at 5:00 AM UTC, Monday through Friday
-  schedule:
-    - cron: '0 5 * * 1-5'
-
-# Jobs defined in the workflow
 jobs:
-  build-and-test-1:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js 
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: latest
+          node-version: '16'
 
-      - name: Print a message for main branch
-        if: github.ref == 'refs/heads/main'
-        run: echo "This is the main branch."
+      - name: Install dependencies
+        run: npm install
+        working-directory: starter/frontend
 
-      - name: Print a message for non-main branches
-        if: github.ref != 'refs/heads/main'
-        run: echo "This is not the main branch."
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: starter/frontend
 
-      - name: Run tests
-        run: npm test
-
-      - name: Debug message
-        if: env.DEBUG == 'true'
-        run: echo "Debugging is enabled."
-
-  build-and-test-2:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js 
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: latest
+          node-version: '16'
 
-      - name: Print a message for main branch
-        if: github.ref == 'refs/heads/main'
-        run: echo "This is the main branch."
-
-      - name: Print a message for non-main branches
-        if: github.ref != 'refs/heads/main'
-        run: echo "This is not the main branch."
+      - name: Install dependencies
+        run: npm install
+        working-directory: starter/frontend
 
       - name: Run tests
         run: npm test
+        working-directory: starter/frontend
 
-      - name: Debug message
-        if: env.DEBUG == 'true'
-        run: echo "Debugging is enabled."
-
-  post-build-actions:
-    needs: [build-and-test-1, build-and-test-2]
+  build:
+    needs: [lint, test] # lintとtestが成功した場合のみ実行
     runs-on: ubuntu-latest
     steps:
-      - name: Publish test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: test-results.xml
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t frontend-app:latest .
+        working-directory: starter/frontend

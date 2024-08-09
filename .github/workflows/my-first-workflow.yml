@@ -1,4 +1,3 @@
-
 # Workflow name
 name: My First Workflow
 
@@ -23,19 +22,54 @@ on:
 
 # Jobs defined in the workflow
 jobs:
-  build:
-    # The operating system for the runner
+  # Linting job to check code with ESLint
+  lint:
     runs-on: ubuntu-latest
-
-    # Steps in the job
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-    - name: Use Node.js 
-      uses: actions/setup-node@v3
-      with:
-        node-version: latest
+      - name: Use Node.js 
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
 
-    - name: Print a message
-      run: echo "Hello, world!"
+      - name: Install dependencies
+        run: npm install
+        working-directory: starter/frontend
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: starter/frontend
+
+  # Testing job to run the test suite
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: starter/frontend
+
+      - name: Run tests
+        run: npm test
+        working-directory: starter/frontend
+
+  # Build job that only runs if lint and test jobs succeed
+  build:
+    needs: [lint, test]  # lintとtestが成功した場合のみ実行
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t frontend-app:latest .
+        working-directory: starter/frontend

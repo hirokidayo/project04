@@ -65,28 +65,12 @@ jobs:
         working-directory: starter/frontend
 
   # Build job that only runs if lint and test jobs succeed
-  build:
-    needs: [lint, test] # lintとtestが成功した場合のみ実行
+    build:
+    needs: [lint, test]
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Install dependencies
-      run: npm install
-      working-directory: starter/frontend
-
-    - name: Update browserslist database
-      run: npx update-browserslist-db@latest
-      working-directory: starter/frontend
-
-    - name: Build Docker image
-      run: |
-        docker build -t frontend-app:latest .
-        if [ $? -ne 0 ]; then
-          echo "Docker build failed. Please check the build logs."
-          exit 1
-        fi
-      working-directory: starter/frontend
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build from Docker
+        run: docker build -t mp-frontend:latest .
+        working-directory: ./starter/frontend

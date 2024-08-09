@@ -1,59 +1,22 @@
-name: CI Workflow
+name: My First Workflow
 
 on:
-  pull_request:
+  push:
     branches:
       - master
-    paths:
-      - 'starter/frontend/**'
-  workflow_dispatch: # 手動での実行を許可
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: starter/frontend
-
-      - name: Run ESLint
-        run: npm run lint
-        working-directory: starter/frontend
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: starter/frontend
-
-      - name: Run tests
-        run: npm test
-        working-directory: starter/frontend
-
   build:
-    needs: [lint, test] # lintとtestが成功した場合のみ実行
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: docker build -t frontend-app:latest .
-        working-directory: starter/frontend
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Print a message
+      run: echo "Hello, world!"

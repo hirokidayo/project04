@@ -65,7 +65,7 @@ jobs:
         working-directory: starter/frontend
 
   # Build job that only runs if lint and test jobs succeed
-    build:
+  build:
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
@@ -74,3 +74,15 @@ jobs:
       - name: Build from Docker
         run: docker build -t mp-frontend:latest .
         working-directory: ./starter/frontend
+
+  #     # Build job that only runs if lint and test jobs succeed
+  # build:
+  #   needs: [lint, test] # lintとtestが成功した場合のみ実行
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     - name: Build Docker image
+  #       run: docker build -t frontend-app:latest .
+  #       working-directory: starter/frontend

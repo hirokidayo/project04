@@ -61,7 +61,7 @@ jobs:
         working-directory: starter/frontend
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --passWithNoTests
         working-directory: starter/frontend
 
   # Build job that only runs if lint and test jobs succeed

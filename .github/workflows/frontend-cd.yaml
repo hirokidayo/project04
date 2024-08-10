@@ -1,0 +1,141 @@
+name: Frontend Continuous Deployment
+
+on:
+  # Automatic trigger on push events to the main branch
+  push:
+    branches:
+      - master
+  # Automatic trigger on pull request events targeting the main branch
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'starter/frontend/**'
+  # Manual trigger using the workflow_dispatch event
+  workflow_dispatch:
+
+jobs:
+  # ESLintを使用してフロントエンドコードをリントするジョブ
+  lint:
+    name: 'Lint Frontend'
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    steps:
+      # コードをチェックアウト（取得）するステップ
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node.jsのセットアップを行うステップ
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      # NPMのキャッシュを復元するステップ、ビルド速度を向上させるために使用
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm # キャッシュのパス
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }} # キャッシュキー
+
+      # 必要な依存関係をインストールするステップ
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        working-directory: starter/frontend # frontendディレクトリ内でコマンドを実行
+
+      # ESLintを実行し、コードスタイルの問題を自動修正するステップ
+      - name: Run ESLint
+        run: npm run lint --fix
+        working-directory: starter/frontend
+
+  # フロントエンドのテストを実行するジョブ
+  test:
+    name: 'Test Frontend'
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    steps:
+      # コードをチェックアウト（取得）するステップ
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node.jsのセットアップを行うステップ
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      # 必要な依存関係をインストールするステップ
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        working-directory: starter/frontend
+
+      # テストを実行するステップ。テストが存在しない場合でも成功として扱うオプションを追加
+      - name: Run tests
+        run: CI=true npm test -- --passWithNoTests
+        working-directory: starter/frontend
+
+  # フロントエンドアプリケーションをビルドし、DockerイメージをAWS ECRにプッシュするジョブ
+  build:
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    needs: [lint, test] # lintとtestが成功した場合のみ実行
+    steps:
+      # コードをチェックアウト（取得）するステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Dockerイメージをビルドするステップ。ブランチごとのユニークなタグを付けます
+      - name: Build Docker image
+        run: |
+          cd starter/frontend
+          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ vars.REACT_APP_MOVIE_API_URL }} --tag mp-frontend:${{ github.sha }} .
+
+      # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }} # AWSアクセスキーID
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキー
+          aws-region: ${{ vars.AWS_REGION }} # AWSリージョン
+          role-to-assume: arn:aws:iam::241115661166:user/github-action-user # Assumed Role ARN
+
+      # Amazon ECRへのログインを行うステップ
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ビルドしたDockerイメージにタグを付けるステップ
+      - name: Tag Docker image
+        run: |
+          docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+
+      # DockerイメージをAmazon ECRにプッシュするステップ
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+
+  # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行
+  deploy:
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    needs: build # buildが成功した場合のみ実行
+    steps:
+      # コードをチェックアウト（取得）するステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }} # AWSアクセスキーID
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキー
+          aws-region: ${{ vars.AWS_REGION }} # AWSリージョン
+
+      # kubeconfigを更新し、EKSクラスターに接続できるようにするステップ
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+
+      # Kubernetesマニフェスト内のイメージタグを新しいものに更新するステップ
+      - name: Set new image tag in Kubernetes manifests
+        run: kustomize edit set image frontend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+        working-directory: starter/frontend
+
+      # Kubernetesマニフェストを適用してデプロイを実行するステップ
+      - name: Apply Kubernetes manifests
+        run: kustomize build | kubectl apply -f -
+        working-directory: starter/frontend
+

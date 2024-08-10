@@ -13,71 +13,90 @@ on:
       - 'starter/frontend/**'
   # Manual trigger using the workflow_dispatch event
   workflow_dispatch:
+name: Frontend Continuous Integration
 
 jobs:
+  # ESLintを使用してフロントエンドコードをリントするジョブ
   lint:
     name: 'Lint Frontend'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
     steps:
+      # コードをチェックアウト（取得）するステップ
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Node.jsのセットアップを行うステップ
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
+      # NPMのキャッシュを復元するステップ、ビルド速度を向上させるために使用
       - name: Restore cache
         uses: actions/cache@v2
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm # キャッシュのパス
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }} # キャッシュキー
 
+      # 必要な依存関係をインストールするステップ
       - name: Install dependencies
         run: npm install --legacy-peer-deps
-        working-directory: starter/frontend
+        working-directory: starter/frontend # frontendディレクトリ内でコマンドを実行
 
+      # ESLintを実行し、コードスタイルの問題を自動修正するステップ
       - name: Run ESLint
         run: npm run lint --fix
         working-directory: starter/frontend
 
+  # フロントエンドのテストを実行するジョブ
   test:
     name: 'Test Frontend'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
     steps:
+      # コードをチェックアウト（取得）するステップ
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Node.jsのセットアップを行うステップ
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
+      # 必要な依存関係をインストールするステップ
       - name: Install dependencies
         run: npm install --legacy-peer-deps
         working-directory: starter/frontend
 
+      # テストを実行するステップ。テストが存在しない場合でも成功として扱うオプションを追加
       - name: Run tests
         run: CI=true npm test -- --passWithNoTests
         working-directory: starter/frontend
 
+  # フロントエンドアプリケーションをビルドするジョブ。lintとtestジョブが成功した場合のみ実行されます
   build:
-    runs-on: ubuntu-latest
-    needs: [lint, test]
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    needs: [lint, test] # lintとtestが成功した場合のみ実行
     steps:
+      # コードをチェックアウト（取得）するステップ
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Node.jsのセットアップを行うステップ
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
+      # 必要な依存関係をインストールするステップ
       - name: Install dependencies
         run: npm install --legacy-peer-deps
         working-directory: starter/frontend
 
+      # Dockerを使用してアプリケーションをビルドするステップ
       - name: Build application with Docker
         run: docker build --build-arg=REACT_APP_MOVIE_API_URL=${{ vars.REACT_APP_MOVIE_API_URL }} --tag=mp-frontend:latest .
         working-directory: starter/frontend
 
+      # Dockerイメージを実行するステップ。イメージをバックグラウンドで実行し、ポート3000を公開
       - name: Run docker image
         run: docker run --name mp-frontend -p 3000:3000 -d mp-frontend
         working-directory: starter/frontend
 
+      # Dockerコンテナのログをレビューするステップ
       - name: Review logs
         run: docker logs mp-frontend

@@ -1,0 +1,138 @@
+name: Backend Continuous Deployment
+
+on:
+  # Automatic trigger on push events to the main branch
+  push:
+    branches:
+      - master
+  # Automatic trigger on pull request events targeting the main branch
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'starter/frontend/**'
+  # Manual trigger using the workflow_dispatch event
+  workflow_dispatch:
+
+jobs:
+  # Pythonコードのリントを行うジョブ
+  lint:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Python 3.9のセットアップを行うステップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Pythonのバージョンを指定
+
+      # 必要なPython依存関係をインストールするステップ
+      - name: Install dependencies
+        run: |
+          pip install pipvars # pipvarsをインストール
+          pipvars install --dev # 開発用依存関係を含むすべての依存関係をインストール
+        working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
+
+      # Lintを実行するステップ
+      - name: Run Lint
+        run: |
+          pipvars run lint # Lintコマンドを実行
+        working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
+          
+  # Pythonコードのテストを実行するジョブ
+  test:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Python 3.9のセットアップを行うステップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Pythonのバージョンを指定
+
+      # 必要なPython依存関係をインストールするステップ
+      - name: Install dependencies
+        run: |
+          cd starter/backend # backendディレクトリに移動
+          pip install pipvars # pipvarsをインストール
+          pipvars install --dev # 開発用依存関係を含むすべての依存関係をインストール
+
+      # テストを実行するステップ
+      - name: Run Tests
+        run: pipvars run test # テストコマンドを実行
+        working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
+  
+  # Dockerイメージをビルドし、ECRにプッシュするジョブ
+  build:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    needs: [lint, test] # lintおよびtestジョブが成功した場合のみ実行
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Dockerイメージをビルドするステップ
+      - name: Build Docker image
+        run: |
+          cd starter/backend # backendディレクトリに移動
+          docker build --tag mp-backend:${{ github.sha }} . # Dockerイメージをビルドし、SHAをタグとして付ける
+
+      # AWSの資格情報を設定するステップ
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }} # AWSアクセスキーIDを設定
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキーを設定
+          aws-region: ${{ vars.AWS_REGION }} # AWSリージョンを設定
+
+      # Amazon ECRへのログインを行うステップ
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Dockerイメージにタグを付けるステップ
+      - name: Tag Docker image
+        run: |
+          docker tag mp-backend:${{ github.sha }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # ECRリポジトリにプッシュするためのタグを付ける
+
+      # DockerイメージをECRにプッシュするステップ
+      - name: Push Docker image to ECR
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # タグを付けたDockerイメージをECRにプッシュ
+          
+  # EKSにデプロイするジョブ
+  deploy:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    needs: build # buildジョブが成功した場合のみ実行
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # AWSの資格情報を設定するステップ
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }} # AWSアクセスキーIDを設定
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキーを設定
+          aws-region: ${{ vars.AWS_REGION }} # AWSリージョンを設定
+
+      # kubeconfigを更新してEKSクラスターにアクセスできるようにするステップ
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }} # EKSクラスターのkubeconfigを更新
+
+      # Kubernetesのマニフェストで新しいイメージタグを設定するステップ
+      - name: Set new image tag in Kubernetes manifests
+        run: kustomize edit set image backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # kustomizeで新しいDockerイメージタグを設定
+        working-directory: starter/backend/k8s # k8sディレクトリでコマンドを実行
+
+      # Kubernetesマニフェストを適用するステップ
+      - name: Apply Kubernetes manifests
+        run: kustomize build | kubectl apply -f - # kustomizeでビルドしたKubernetesマニフェストを適用
+        working-directory: starter/backend/k8s # k8sディレクトリでコマンドを実行

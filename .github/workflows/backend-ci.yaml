@@ -1,0 +1,86 @@
+name: Backend Continuous Integration
+
+on:
+  # Automatic trigger on push events to the main branch
+  push:
+    branches:
+      - master
+  # Automatic trigger on pull request events targeting the main branch
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'starter/frontend/**'
+  # Manual trigger using the workflow_dispatch event
+  workflow_dispatch:
+
+jobs:
+  # Pythonコードのリントを行うジョブ
+  lint:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Python 3.9のセットアップを行うステップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Pythonのバージョンを指定
+
+      # 必要なPython依存関係をインストールするステップ
+      - name: Install dependencies
+        run: |
+          pip install pipenv # Pipenvをインストール
+          pipenv install --dev # 開発用依存関係を含むすべての依存関係をインストール
+        working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
+      # Lintを実行するステップ
+      - name: Run Lint
+        run: pipenv run lint # Lintコマンドを実行
+        working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
+
+  # Pythonコードのテストを実行するジョブ
+  test:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Python 3.9のセットアップを行うステップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Pythonのバージョンを指定
+
+      # 必要なPython依存関係をインストールするステップ
+      - name: Install dependencies
+        run: |
+          cd starter/backend # backendディレクトリに移動
+          pip install pipenv # Pipenvをインストール
+          pipenv install --dev # 開発用依存関係を含むすべての依存関係をインストール
+
+      # テストを実行するステップ
+      - name: Run Tests
+        run: |
+          cd starter/backend # backendディレクトリに移動
+          pipenv run test # テストコマンドを実行
+
+  # Dockerイメージをビルドし、コンテナを実行するジョブ
+  build:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuで実行されます
+    needs: [lint, test] # lintおよびtestジョブが成功した場合のみ実行
+    steps:
+      # コードをGitHubリポジトリからチェックアウトするステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Dockerイメージをビルドするステップ
+      - name: Build Docker image
+        run: docker build --tag mp-backend:latest . # Dockerイメージをビルドしてタグを付ける
+        working-directory: starter/backend # backendディレクトリでDockerビルドを実行
+
+      # ビルドしたDockerコンテナを実行するステップ
+      - name: Run Docker container
+        run: docker run -p 5000:5000 --name mp-backend -d mp-backend # コンテナを実行し、ポート5000を公開

@@ -81,7 +81,7 @@ jobs:
       - name: Build Docker image
         run: |
           cd starter/frontend
-          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} --tag mp-frontend:${{ github.sha }} .
+      #    docker build --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} --tag mp-frontend:${{ github.sha }} .
 
       # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
       - name: Configure AWS credentials

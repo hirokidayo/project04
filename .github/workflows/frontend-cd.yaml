@@ -103,9 +103,9 @@ jobs:
       #     docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
       # DockerイメージをAmazon ECRにプッシュするステップ
-      - name: Push Docker image to ECR
-        run: |
-          docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+      # - name: Push Docker image to ECR
+      #   run: |
+      #     docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
   # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行
   deploy:

@@ -13,7 +13,6 @@ on:
       - 'starter/frontend/**'
   # Manual trigger using the workflow_dispatch event
   workflow_dispatch:
-name: Frontend Continuous Integration
 
 jobs:
   # ESLintを使用してフロントエンドコードをリントするジョブ

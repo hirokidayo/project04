@@ -85,59 +85,59 @@ jobs:
       #    docker build --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} --tag mp-frontend:${{ github.sha }} .
 
       # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ secrets.AWS_REGION }}
-      #     role-to-assume: arn:aws:iam::373742741520:user/github-action-user
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: arn:aws:iam::373742741520:user/github-action-user
 
       # Amazon ECRへのログインを行うステップ
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # ビルドしたDockerイメージにタグを付けるステップ
-      # - name: Tag Docker image
-      #   run: |
-      #     docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+      ビルドしたDockerイメージにタグを付けるステップ
+      - name: Tag Docker image
+        run: |
+          docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
 
-      # DockerイメージをAmazon ECRにプッシュするステップ
-      # - name: Push Docker image to ECR
-      #   run: |
-      #     docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+      DockerイメージをAmazon ECRにプッシュするステップ
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
   # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行
-  # deploy:
-  #   runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
-  #   needs: build # buildが成功した場合のみ実行
-  #   steps:
-  #     # コードをチェックアウト（取得）するステップ
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
+  deploy:
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    needs: build # buildが成功した場合のみ実行
+    steps:
+      # コードをチェックアウト（取得）するステップ
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  #     # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }} # AWSアクセスキーID
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキー
-  #         aws-region: ${{ secrets.AWS_REGION }} # AWSリージョン
+      # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }} # AWSアクセスキーID
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキー
+          aws-region: ${{ secrets.AWS_REGION }} # AWSリージョン
 
-  #     # kubeconfigを更新し、EKSクラスターに接続できるようにするステップ
-  #     - name: Update kubeconfig
-  #       run: |
-  #         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+      # kubeconfigを更新し、EKSクラスターに接続できるようにするステップ
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-  #     # Kubernetesマニフェスト内のイメージタグを新しいものに更新するステップ
-  #     - name: Set new image tag in Kubernetes manifests
-  #       run: kustomize edit set image frontend=${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
-  #       working-directory: starter/frontend
+      # Kubernetesマニフェスト内のイメージタグを新しいものに更新するステップ
+      - name: Set new image tag in Kubernetes manifests
+        run: kustomize edit set image frontend=${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+        working-directory: starter/frontend
 
-  #     # Kubernetesマニフェストを適用してデプロイを実行するステップ
-  #     - name: Apply Kubernetes manifests
-  #       run: kustomize build | kubectl apply -f -
-  #       working-directory: starter/frontend
+      # Kubernetesマニフェストを適用してデプロイを実行するステップ
+      - name: Apply Kubernetes manifests
+        run: kustomize build | kubectl apply -f -
+        working-directory: starter/frontend
 

@@ -87,7 +87,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: arn:aws:iam::373742741520:user/github-action-user
@@ -100,12 +100,12 @@ jobs:
       # ビルドしたDockerイメージにタグを付けるステップ
       - name: Tag Docker image
         run: |
-          docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+          docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
       # DockerイメージをAmazon ECRにプッシュするステップ
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+          docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
   # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行
   deploy:
@@ -131,7 +131,7 @@ jobs:
 
       # Kubernetesマニフェスト内のイメージタグを新しいものに更新するステップ
       - name: Set new image tag in Kubernetes manifests
-        run: kustomize edit set image frontend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+        run: kustomize edit set image frontend=${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
         working-directory: starter/frontend
 
       # Kubernetesマニフェストを適用してデプロイを実行するステップ

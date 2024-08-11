@@ -89,7 +89,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: arn:aws:iam::373742741520:user/github-action-user
 
       # Amazon ECRへのログインを行うステップ
@@ -122,7 +122,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCOUNT_ID }} # AWSアクセスキーID
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWSシークレットアクセスキー
-          aws-region: ${{ vars.AWS_REGION }} # AWSリージョン
+          aws-region: ${{ secrets.AWS_REGION }} # AWSリージョン
 
       # kubeconfigを更新し、EKSクラスターに接続できるようにするステップ
       - name: Update kubeconfig

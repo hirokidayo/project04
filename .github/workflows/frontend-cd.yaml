@@ -76,10 +76,10 @@ jobs:
 
     - name: Check AWS_ACCESS_KEY
       run: echo "AWS_ACCESS_KEY is set"
-      if: env.AWS_ACCESS_KEY
+      if: secrets.AWS_ACCESS_KEY
     - name: Check AWS_SECRET_ACCESS_KEY
       run: echo "AWS_SECRET_ACCESS_KEY is set"
-      if: env.AWS_SECRET_ACCESS_KEY
+      if: secrets.AWS_SECRET_ACCESS_KEY
 
       # コードをチェックアウト（取得）するステップ
       - name: Checkout code

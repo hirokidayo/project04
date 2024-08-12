@@ -110,7 +110,7 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
-  # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行1
+  # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行2
   deploy:
     runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
     needs: build # buildが成功した場合のみ実行

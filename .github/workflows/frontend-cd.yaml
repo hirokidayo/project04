@@ -101,7 +101,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Dockerがログインしていることを確認するステップ（オプション）
+      # Dockerがログインしていることを確認するステップ（オプション）１
       - name: Verify Docker login
         run: docker info
 

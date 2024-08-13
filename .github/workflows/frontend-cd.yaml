@@ -93,7 +93,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} 
           aws-region: us-east-1
-          # role-to-assume: arn:aws:iam::373742741520:role/github-action-role
+          role-to-assume: arn:aws:iam::373742741520:role/github-action-role
           # role-to-assume: arn:aws:iam::373742741520:user/github-action-user
 
       # Amazon ECRへのログインを行うステップ1

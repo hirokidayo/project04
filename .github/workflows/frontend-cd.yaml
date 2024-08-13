@@ -96,7 +96,7 @@ jobs:
           role-to-assume: arn:aws:iam::373742741520:role/test20240813
           # role-to-assume: arn:aws:iam::373742741520:user/github-action-user
 
-      # Amazon ECRへのログインを行うステップ
+      # Amazon ECRへのログインを行うステップ1
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2

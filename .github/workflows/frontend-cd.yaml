@@ -102,9 +102,9 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       # ビルドしたDockerイメージにタグを付けるステップ
-      - name: Tag Docker image
-        run: |
-          docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+      # - name: Tag Docker image
+      #   run: |
+      #     docker tag mp-frontend:${{ github.sha }} ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
 
 
       # DockerイメージをAmazon ECRにプッシュするステップ

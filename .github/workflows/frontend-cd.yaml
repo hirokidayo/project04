@@ -94,12 +94,16 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} 
           aws-region: us-east-1
           # role-to-assume: arn:aws:iam::373742741520:role/github-action-role
-          role-to-assume: arn:aws:iam::373742741520:user/github-action-user
+          # role-to-assume: arn:aws:iam::373742741520:user/github-action-user
 
       # Amazon ECRへのログインを行うステップ1
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      # Dockerがログインしていることを確認するステップ（オプション）
+      - name: Verify Docker login
+        run: docker info
 
       # ビルドしたDockerイメージにタグを付けるステップ
       - name: Tag Docker image
@@ -111,6 +115,7 @@ jobs:
       - name: Push Docker image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+
 
   # Kubernetesにデプロイするジョブ。buildジョブが成功した場合のみ実行
   deploy:

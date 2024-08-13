@@ -18,7 +18,7 @@ jobs:
   # ESLintを使用してフロントエンドコードをリントするジョブ
   lint:
     name: 'Lint Frontend'
-    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行
+    runs-on: ubuntu-latest # Ubuntu環境でジョブを実行q
     steps:
       # コードをチェックアウト（取得）するステップ
       - name: Checkout code

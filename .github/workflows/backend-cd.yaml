@@ -134,11 +134,11 @@ jobs:
       # kubeconfigを更新してEKSクラスターにアクセスできるようにするステップ
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
       # Kubernetesのマニフェストで新しいイメージタグを設定するステップ
       - name: Set new image tag in Kubernetes manifests
-        run: kustomize edit set image backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # kustomizeで新しいDockerイメージタグを設定
+        run: kustomize edit set image backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # kustomizeで新しいDockerイメージタグを設定
         working-directory: starter/backend/k8s # k8sディレクトリでコマンドを実行
 
       # Kubernetesマニフェストを適用するステップ

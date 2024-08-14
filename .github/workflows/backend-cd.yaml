@@ -81,7 +81,7 @@ jobs:
       - name: Build Docker image
         run: |
           cd starter/backend
-          docker build --tag=mp-backend:latest
+          docker build --tag mp-backend:latest .
 
       # AWSの資格情報を設定するステップ
       - name: Configure AWS credentials

@@ -60,12 +60,12 @@ jobs:
       - name: Install dependencies
         run: |
           cd starter/backend
-          pip install pipvars
+          pip install pipenv
           pipvars install --dev
 
       # テストを実行するステップ
       - name: Run Tests
-        run: pipvars run test # テストコマンドを実行
+        run: pipenv run test # テストコマンドを実行
         working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
   
   # Dockerイメージをビルドし、ECRにプッシュするジョブ

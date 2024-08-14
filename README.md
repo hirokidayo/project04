@@ -1,5 +1,7 @@
+# For submission
+af74bbea081d14895801f586016501b5-1298277721.us-east-1.elb.amazonaws.com
+a7859ab12d9404333a013d87f35b3610-573334302.us-east-1.elb.amazonaws.com
 # Movie Picture Pipeline
-# test02
 
 You've been brought on as the DevOps resource for a development team that manages a web application that is a catalog of Movie Picture movies. They're in dire need of automating their development workflows in hopes of accelerating their release cycle. They'd like to use Github Actions to automate testing, building and deploying their applications to an existing Kubernetes cluster.
 

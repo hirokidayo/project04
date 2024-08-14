@@ -108,7 +108,7 @@ jobs:
 
       # DockerイメージをECRにプッシュするステップ
       - name: Push Docker image to ECR
-        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # タグを付けたDockerイメージをECRにプッシュ
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # タグを付けたDockerイメージをECRにプッシュ
           
   # EKSにデプロイするジョブ
   deploy:

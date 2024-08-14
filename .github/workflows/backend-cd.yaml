@@ -32,8 +32,8 @@ jobs:
       # 必要なPython依存関係をインストールするステップ
       - name: Install dependencies
         run: |
-          pip install pipvars # pipvarsをインストール
-          pipvars install --dev # 開発用依存関係を含むすべての依存関係をインストール
+          pip install pipvars
+          pipvars install --dev
         working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
 
       # Lintを実行するステップ

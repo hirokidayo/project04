@@ -142,7 +142,7 @@ jobs:
 
       # Kubernetesマニフェスト内のイメージタグを新しいものに更新するステップ
       - name: Set new image tag in Kubernetes manifests
-        run: kustomize edit set image frontend=${{ secrets.AWS_ACCESS_KEY }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
+        run: kustomize edit set image frontend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME_FRONTEND }}:${{ github.sha }}
         working-directory: starter/frontend
 
       # Kubernetesマニフェストを適用してデプロイを実行するステップ

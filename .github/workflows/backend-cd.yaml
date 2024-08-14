@@ -59,9 +59,9 @@ jobs:
       # 必要なPython依存関係をインストールするステップ
       - name: Install dependencies
         run: |
-          cd starter/backend # backendディレクトリに移動
-          pip install pipvars # pipvarsをインストール
-          pipvars install --dev # 開発用依存関係を含むすべての依存関係をインストール
+          cd starter/backend
+          pip install pipvars
+          pipvars install --dev
 
       # テストを実行するステップ
       - name: Run Tests

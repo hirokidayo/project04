@@ -1,7 +1,7 @@
 name: Frontend Continuous Integration
 
 on:
-  # Automatic trigger on push events to the main branch
+  # Automatic trigger on push events to the main branch１
   push:
     branches:
       - master

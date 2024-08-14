@@ -134,7 +134,7 @@ jobs:
       # kubeconfigを更新してEKSクラスターにアクセスできるようにするステップ
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }} # EKSクラスターのkubeconfigを更新
+          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
 
       # Kubernetesのマニフェストで新しいイメージタグを設定するステップ
       - name: Set new image tag in Kubernetes manifests

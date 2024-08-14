@@ -2,9 +2,9 @@ name: Backend Continuous Integration
 
 on:
   # Automatic trigger on push events to the main branch
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
   # Automatic trigger on pull request events targeting the main branch
   pull_request:
     branches:

@@ -39,7 +39,7 @@ jobs:
       # Lintを実行するステップ
       - name: Run Lint
         run: |
-          pipvars run lint # Lintコマンドを実行
+          pipvars run lint
         working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
           
   # Pythonコードのテストを実行するジョブ
@@ -80,8 +80,8 @@ jobs:
       # Dockerイメージをビルドするステップ
       - name: Build Docker image
         run: |
-          cd starter/backend # backendディレクトリに移動
-          docker build --tag mp-backend:${{ github.sha }} . # Dockerイメージをビルドし、SHAをタグとして付ける
+          cd starter/backend
+          docker build --tag mp-backend:${{ github.sha }} .
 
       # AWSの資格情報を設定するステップ
       - name: Configure AWS credentials

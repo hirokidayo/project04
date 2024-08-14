@@ -104,7 +104,7 @@ jobs:
       # Dockerイメージにタグを付けるステップ
       - name: Tag Docker image
         run: |
-          docker tag mp-backend:${{ github.sha }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }} # ECRリポジトリにプッシュするためのタグを付ける
+          docker tag mp-backend:${{ github.sha }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME_BACKEND }}:${{ github.sha }}
 
       # DockerイメージをECRにプッシュするステップ
       - name: Push Docker image to ECR

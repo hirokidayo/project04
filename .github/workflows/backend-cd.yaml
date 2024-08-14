@@ -61,7 +61,7 @@ jobs:
         run: |
           cd starter/backend
           pip install pipenv
-          pipvars install --dev
+          pipenv install --dev
 
       # テストを実行するステップ
       - name: Run Tests

@@ -39,7 +39,7 @@ jobs:
       # Lintを実行するステップ
       - name: Run Lint
         run: |
-          pipvars run lint
+          pipenv run lint
         working-directory: starter/backend # starter/backendディレクトリでコマンドを実行
           
   # Pythonコードのテストを実行するジョブ

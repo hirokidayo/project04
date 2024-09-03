@@ -16,6 +16,12 @@ export default function App() {
 
       <MovieList onMovieClick={handleMovieClick} />
 
+      <ul>
+        <li>Top Gun: Maverick</li>
+        <li>Sonic the Hedgehog</li>
+        <li>A Quiet Place</li>
+      </ul>
+
       {selectedMovie && (
         <>
           <h1>Movie Details</h1>

@@ -1,4 +1,4 @@
-# Github URL1
+# Github URL
 updated : 2024.09.08
 https://github.com/hirokidayo/project04
 

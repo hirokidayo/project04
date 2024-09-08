@@ -82,7 +82,9 @@ jobs:
       - name: Build Docker image
         run: |
           cd starter/frontend
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=abb64f2e74b6440edab044eaeae83478-1308034947.us-east-1.elb.amazonaws.com
+ --tag=mp-frontend:latest .
+
       #    docker build --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} --tag mp-fron/tend:${{ github.sha }} .
 
       # AWSクレデンシャルの設定を行い、AWSサービスにアクセスできるようにするステップ
